@@ -91,10 +91,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy installed binaries and tools from builder stage
 COPY --from=builder /usr/local/bin/aws /usr/local/bin/aws
 COPY --from=builder /usr/local/aws-cli/ /usr/local/aws-cli/
-COPY --from=builder /usr/local/bin/terraform /usr/local/bin/terraform
+COPY --from=builder /usr/bin/terraform /usr/bin/terraform
 COPY --from=builder /usr/local/bin/tflint /usr/local/bin/tflint
 COPY --from=builder /usr/local/bin/opa /usr/local/bin/opa
-COPY --from=builder /usr/local/bin/trivy /usr/local/bin/trivy
+COPY --from=builder /usr/bin/trivy /usr/bin/trivy
 
 # Copy Terraform provider cache
 COPY --from=builder /usr/local/terraform.d/plugin-cache /usr/local/terraform.d/plugin-cache
