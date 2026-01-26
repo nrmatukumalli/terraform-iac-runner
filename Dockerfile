@@ -9,6 +9,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates curl wget jq git gnupg unzip tar bash \
     && rm -rf /var/lib/apt/lists
 
+############################################
+# AWS CLI
+############################################
+RUN if [ "${TARGETARCH}" = "linux/amd64" ]; then ARCHITECTURE=x86_64; elif [ "${TARGETARCH}" = "linux/arm64" ]; then ARCHITECTURE=aarch64; else ARCHITECTURE=x86_64; fi ;\
+    for i in {1..5}; do curl -LsS "https://awscli.amazonaws.com/awscli-exe-linux-${ARCHITECTURE}.zip" -o /tmp/awscli.zip && break || sleep 15; done ;\
+    mkdir -p /usr/local/awscli ;\
+    unzip -q /tmp/awscli.zip -d /usr/local/awscli ;\
+    /usr/local/awscli/aws/install
 
 ############################################
 # Terraform (HashiCorp official APT repo)
@@ -55,17 +63,8 @@ RUN set -eux; \
     if [ "${TARGETARCH}" = "linux/amd64" ]; then OPA_ARCH=amd64; elif [ "${TARGETARCH}" = "linux/arm64" ]; then OPA_ARCH=arm64; else OPA_ARCH=amd64; fi ; \
     OPA_URL="https://github.com/open-policy-agent/opa/releases/latest/download/opa_linux_${OPA_ARCH}"; \
     curl -fsSL -o /usr/local/bin/opa "$OPA_URL"; \
-    chmod +x /usr/local/bin/opa; \
-    /usr/local/bin/opa version
-
-############################################
-# AWS CLI
-############################################
-RUN if [ "${TARGETARCH}" = "linux/amd64" ]; then ARCHITECTURE=x86_64; elif [ "${TARGETARCH}" = "linux/arm64" ]; then ARCHITECTURE=aarch64; else ARCHITECTURE=x86_64; fi ;\
-    for i in {1..5}; do curl -LsS "https://awscli.amazonaws.com/awscli-exe-linux-${ARCHITECTURE}.zip" -o /tmp/awscli.zip && break || sleep 15; done ;\
-    mkdir -p /usr/local/awscli ;\
-    unzip -q /tmp/awscli.zip -d /usr/local/awscli ;\
-    /usr/local/awscli/aws/install
+    chmod +x /usr/local/bin/opa; 
+    #/usr/local/bin/opa version
 
 # IAC Tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
