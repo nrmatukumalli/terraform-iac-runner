@@ -53,7 +53,7 @@ RUN set -eux; \
 # Reference: https://www.openpolicyagent.org/docs/latest/#running-opa
 RUN set -eux; \
     if [ "${TARGETARCH}" = "linux/amd64" ]; then OPA_ARCH=amd64; elif [ "${TARGETARCH}" = "linux/arm64" ]; then OPA_ARCH=arm64; else OPA_ARCH=amd64; fi ; \
-    OPA_URL="https://github.com/open-policy-agent/opa/releases/latest/download/opa_${OPA_ARCH}"; \
+    OPA_URL="https://github.com/open-policy-agent/opa/releases/latest/download/opa_linux_${OPA_ARCH}"; \
     curl -fsSL -o /usr/local/bin/opa "$OPA_URL"; \
     chmod +x /usr/local/bin/opa; \
     opa version
