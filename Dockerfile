@@ -44,7 +44,7 @@ RUN set -eux; \
     curl -fsSL -o /tmp/tflint.zip "$TFLINT_URL"; \
     unzip -d /usr/local/bin /tmp/tflint.zip; \
     rm -f /tmp/tflint.zip; \
-    tflint --version
+    /usr/local/bin/tflint --version
 
 
 ############################################
@@ -56,7 +56,7 @@ RUN set -eux; \
     OPA_URL="https://github.com/open-policy-agent/opa/releases/latest/download/opa_linux_${OPA_ARCH}"; \
     curl -fsSL -o /usr/local/bin/opa "$OPA_URL"; \
     chmod +x /usr/local/bin/opa; \
-    opa version
+    /usr/local/bin/opa version
 
 ############################################
 # AWS CLI
@@ -69,7 +69,7 @@ RUN if [ "${TARGETARCH}" = "linux/amd64" ]; then ARCHITECTURE=x86_64; elif [ "${
 
 # IAC Tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    terraform \
+    terraform trivy \
     && rm -rf /var/lib/apt/lists/*
 
 
