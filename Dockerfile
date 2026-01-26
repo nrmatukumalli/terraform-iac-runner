@@ -2,6 +2,7 @@
 FROM debian:bookworm-slim
 
 ARG DEBIAN_FRONTEND=noninteractive
+ARG TARGETARCH
 
 # Base tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -20,6 +21,51 @@ RUN install -m 0755 -d /etc/apt/keyrings && \
     . /etc/os-release && \
     echo "deb [signed-by=/etc/apt/keyrings/hashicorp.gpg] https://apt.releases.hashicorp.com ${VERSION_CODENAME} main" \
       > /etc/apt/sources.list.d/hashicorp.list
+      
+############################################
+# Trivy (Aqua Security official APT repo)
+############################################
+# Reference: https://aquasecurity.github.io/trivy/v0.55/getting-started/installation/
+RUN install -m 0755 -d /etc/apt/keyrings && \
+    curl -fsSL https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor -o /etc/apt/keyrings/trivy.gpg && \
+    chmod a+r /etc/apt/keyrings/trivy.gpg && \
+    . /etc/os-release && \
+    echo "deb [signed-by=/etc/apt/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb ${VERSION_CODENAME} main" \
+      > /etc/apt/sources.list.d/trivy.list
+
+
+############################################
+# TFLint (GitHub latest release)
+############################################
+# Reference: https://github.com/terraform-linters/tflint#installation
+RUN set -eux; \
+    if [ "${TARGETARCH}" = "linux/amd64" ]; then TFLINT_ARCH=amd64; elif [ "${TARGETARCH}" = "linux/arm64" ]; then TFLINT_ARCH=arm64; else TFLINT_ARCH=amd64; fi ; \
+    TFLINT_URL="https://github.com/terraform-linters/tflint/releases/latest/download/tflint_${TFLINT_ARCH}.zip"; \
+    curl -fsSL -o /tmp/tflint.zip "$TFLINT_URL"; \
+    unzip -d /usr/local/bin /tmp/tflint.zip; \
+    rm -f /tmp/tflint.zip; \
+    tflint --version
+
+
+############################################
+# OPA (GitHub latest release)
+############################################
+# Reference: https://www.openpolicyagent.org/docs/latest/#running-opa
+RUN set -eux; \
+    if [ "${TARGETARCH}" = "linux/amd64" ]; then OPA_ARCH=amd64; elif [ "${TARGETARCH}" = "linux/arm64" ]; then OPA_ARCH=arm64; else OPA_ARCH=amd64; fi ; \
+    OPA_URL="https://github.com/open-policy-agent/opa/releases/latest/download/opa_${OPA_ARCH}"; \
+    curl -fsSL -o /usr/local/bin/opa "$OPA_URL"; \
+    chmod +x /usr/local/bin/opa; \
+    opa version
+
+############################################
+# AWS CLI
+############################################
+RUN if [ "${TARGETARCH}" = "linux/amd64" ]; then ARCHITECTURE=x86_64; elif [ "${TARGETARCH}" = "linux/arm64" ]; then ARCHITECTURE=aarch64; else ARCHITECTURE=x86_64; fi ;\
+    for i in {1..5}; do curl -LsS "https://awscli.amazonaws.com/awscli-exe-linux-${ARCHITECTURE}.zip" -o /tmp/awscli.zip && break || sleep 15; done ;\
+    mkdir -p /usr/local/awscli ;\
+    unzip -q /tmp/awscli.zip -d /usr/local/awscli ;\
+    /usr/local/awscli/aws/install
 
 # IAC Tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -27,4 +73,4 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 
-CMD ["/bin/sh", "-lc", "echo 'Versions:' && terraform -version && bash"]
+CMD ["/bin/sh", "-lc", "echo 'Versions:' && terraform -version && tflint --version && trivy --version && opa version && awscli --version && bash"]
