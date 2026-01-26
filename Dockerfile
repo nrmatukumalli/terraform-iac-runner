@@ -17,7 +17,7 @@ RUN if [ "${TARGETARCH}" = "linux/amd64" ]; then ARCHITECTURE=x86_64; elif [ "${
     mkdir -p /usr/local/awscli ;\
     unzip -q /tmp/awscli.zip -d /usr/local/awscli ;\
     /usr/local/awscli/aws/install \
-    rm -rf /tmp/awscli.zip
+    && rm -rf /tmp/awscli.zip
 
 ############################################
 # Terraform (HashiCorp official APT repo)
