@@ -41,3 +41,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            AWS_PROVIDER_VERSIONS="5.100.0 6.28.0 latest"
+            DATABRICKS_PROVIDER_VERSIONS="latest"
+            KUBERNETES_PROVIDER_VERSIONS="latest"
