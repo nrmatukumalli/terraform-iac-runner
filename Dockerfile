@@ -72,4 +72,4 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 
-CMD ["/bin/sh", "-lc", "echo 'Versions:' && terraform -version && tflint --version && trivy --version && opa version && awscli --version && bash"]
+CMD ["/bin/sh", "-lc", "echo 'Versions:' && terraform -version && tflint --version && trivy --version && opa version && bash"]
