@@ -1,13 +1,14 @@
 
-FROM debian:bookworm-slim
+# Build stage - contains all build dependencies and tools
+FROM debian:bookworm-slim AS builder
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG TARGETARCH
 
-# Base tools
+# Install build tools and dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates curl wget jq git gnupg unzip tar bash \
-    && rm -rf /var/lib/apt/lists
+    && rm -rf /var/lib/apt/lists/*
 
 ############################################
 # AWS CLI
@@ -42,7 +43,6 @@ RUN install -m 0755 -d /etc/apt/keyrings && \
     echo "deb [signed-by=/etc/apt/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb ${VERSION_CODENAME} main" \
       > /etc/apt/sources.list.d/trivy.list
 
-
 ############################################
 # TFLint (GitHub latest release)
 ############################################
@@ -55,7 +55,6 @@ RUN set -eux; \
     rm -f /tmp/tflint.zip; \
     /usr/local/bin/tflint --version
 
-
 ############################################
 # OPA (GitHub latest release)
 ############################################
@@ -67,27 +66,49 @@ RUN set -eux; \
     chmod +x /usr/local/bin/opa; 
     #/usr/local/bin/opa version
 
-# IAC Tools
+# Install IAC Tools via APT
 RUN apt-get update && apt-get install -y --no-install-recommends \
     terraform trivy \
     && rm -rf /var/lib/apt/lists/*
-
 
 ############################################
 # Terraform provider cache (pre-populate)
 ############################################
 ENV TF_PLUGIN_CACHE_DIR=/usr/local/terraform.d/plugin-cache
 COPY build-cache.sh /tmp/build-cache.sh
-RUN chmod +x /tmp/build-cache.sh
-RUN /tmp/build-cache.sh
+RUN chmod +x /tmp/build-cache.sh && /tmp/build-cache.sh
 
-ENV TF_IN_AUTOMATION=1 \
+# Final runtime stage - minimal runtime dependencies only
+FROM debian:bookworm-slim AS runtime
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+# Install only runtime dependencies (no build tools like curl, wget, unzip, etc.)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates git bash jq \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy installed binaries and tools from builder stage
+COPY --from=builder /usr/local/bin/aws /usr/local/bin/aws
+COPY --from=builder /usr/local/aws-cli/ /usr/local/aws-cli/
+COPY --from=builder /usr/local/bin/terraform /usr/local/bin/terraform
+COPY --from=builder /usr/local/bin/tflint /usr/local/bin/tflint
+COPY --from=builder /usr/local/bin/opa /usr/local/bin/opa
+COPY --from=builder /usr/local/bin/trivy /usr/local/bin/trivy
+
+# Copy Terraform provider cache
+COPY --from=builder /usr/local/terraform.d/plugin-cache /usr/local/terraform.d/plugin-cache
+
+# Set environment variables
+ENV TF_PLUGIN_CACHE_DIR=/usr/local/terraform.d/plugin-cache \
+    TF_IN_AUTOMATION=1 \
     TF_INPUT=0 \
     PAGER=cat \
     AWS_CSM_ENABLED=false \
     AWS_PAGER="" \
-    AWS_DEFAULT_OUTPUT=json 
+    AWS_DEFAULT_OUTPUT=json
 
+# Set proper permissions and create workspace
 RUN chmod -R a+rX /usr/local/terraform.d/plugin-cache && mkdir -p /workspace
 
 WORKDIR /workspace
