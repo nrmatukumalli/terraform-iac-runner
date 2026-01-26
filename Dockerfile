@@ -86,7 +86,8 @@ ARG KUBERNETES_PROVIDER_VERSIONS="latest"
 
 ENV TF_PLUGIN_CACHE_DIR=/usr/local/terraform.d/plugin-cache
 COPY build-cache.sh /tmp/build-cache.sh
-RUN /tmp.build-cache.sh
+RUN chmod +x /tmp/build-cache.sh
+RUN /tmp/build-cache.sh
 
 ENV TF_IN_AUTOMATION=1 \
     TF_INPUT=0 \
