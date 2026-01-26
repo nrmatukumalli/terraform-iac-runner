@@ -40,7 +40,7 @@ RUN install -m 0755 -d /etc/apt/keyrings && \
 # Reference: https://github.com/terraform-linters/tflint#installation
 RUN set -eux; \
     if [ "${TARGETARCH}" = "linux/amd64" ]; then TFLINT_ARCH=amd64; elif [ "${TARGETARCH}" = "linux/arm64" ]; then TFLINT_ARCH=arm64; else TFLINT_ARCH=amd64; fi ; \
-    TFLINT_URL="https://github.com/terraform-linters/tflint/releases/latest/download/tflint_${TFLINT_ARCH}.zip"; \
+    TFLINT_URL="https://github.com/terraform-linters/tflint/releases/latest/download/tflint_linux_${TFLINT_ARCH}.zip"; \
     curl -fsSL -o /tmp/tflint.zip "$TFLINT_URL"; \
     unzip -d /usr/local/bin /tmp/tflint.zip; \
     rm -f /tmp/tflint.zip; \
