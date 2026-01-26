@@ -88,4 +88,6 @@ ENV TF_IN_AUTOMATION=1 \
     AWS_PAGER="" \
     AWS_DEFAULT_OUTPUT=json 
 
+RUN chmod -R a+rX /usr/local/terraform.d/plugin-cache
+
 CMD ["/bin/sh", "-lc", "echo 'Versions:' && terraform -version && tflint --version && trivy --version && opa version && aws --version && bash"]
