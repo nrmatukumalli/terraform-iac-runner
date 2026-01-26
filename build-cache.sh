@@ -33,6 +33,10 @@ EOF
   done
 }
 
+AWS_PROVIDER_VERSIONS='5.100.0 6.28.0 latest'
+DATABRICKS_PROVIDER_VERSIONS='latest'
+KUBERNETES_PROVIDER_VERSIONS='latest'
+
 cache_provider "hashicorp/aws" "aws" ${AWS_PROVIDER_VERSIONS}
 cache_provider "databricks/databricks" "databricks" ${DATABRICKS_PROVIDER_VERSIONS}
 cache_provider "hashicorp/kubernetes" "kubernetes" ${KUBERNETES_PROVIDER_VERSIONS}

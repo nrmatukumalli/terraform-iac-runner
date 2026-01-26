@@ -75,15 +75,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ############################################
 # Terraform provider cache (pre-populate)
 ############################################
-# Configure which provider versions to cache at build-time.
-# Use space-separated version lists. Use the token "latest" to fetch the newest version.
-# Examples:
-#   --build-arg AWS_PROVIDER_VERSIONS="5.52.0 5.51.0 latest"
-#   --build-arg DATABRICKS_PROVIDER_VERSIONS="1.63.0 1.62.0"
-ARG AWS_PROVIDER_VERSIONS="latest"
-ARG DATABRICKS_PROVIDER_VERSIONS="latest"
-ARG KUBERNETES_PROVIDER_VERSIONS="latest"
-
 ENV TF_PLUGIN_CACHE_DIR=/usr/local/terraform.d/plugin-cache
 COPY build-cache.sh /tmp/build-cache.sh
 RUN chmod +x /tmp/build-cache.sh
