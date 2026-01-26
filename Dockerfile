@@ -11,16 +11,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 ############################################
-# AWS CLI
-############################################
-RUN if [ "${TARGETARCH}" = "linux/amd64" ]; then ARCHITECTURE=x86_64; elif [ "${TARGETARCH}" = "linux/arm64" ]; then ARCHITECTURE=aarch64; else ARCHITECTURE=x86_64; fi ;\
-    for i in {1..5}; do curl -LsS "https://awscli.amazonaws.com/awscli-exe-linux-${ARCHITECTURE}.zip" -o /tmp/awscli.zip && break || sleep 15; done ;\
-    mkdir -p /usr/local/awscli ;\
-    unzip -q /tmp/awscli.zip -d /usr/local/awscli ;\
-    /usr/local/awscli/aws/install \
-    && rm -rf /tmp/awscli.zip
-
-############################################
 # Terraform (HashiCorp official APT repo)
 ############################################
 # Reference: HashiCorp official install docs
@@ -85,12 +75,18 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 # Install only runtime dependencies (no build tools like curl, wget, unzip, etc.)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates git bash jq \
+    ca-certificates git bash jq curl wget unzip tar bash \
     && rm -rf /var/lib/apt/lists/*
 
+# AWS CLI
+RUN if [ "${TARGETARCH}" = "linux/amd64" ]; then ARCHITECTURE=x86_64; elif [ "${TARGETARCH}" = "linux/arm64" ]; then ARCHITECTURE=aarch64; else ARCHITECTURE=x86_64; fi ;\
+    for i in {1..5}; do curl -LsS "https://awscli.amazonaws.com/awscli-exe-linux-${ARCHITECTURE}.zip" -o /tmp/awscli.zip && break || sleep 15; done ;\
+    mkdir -p /usr/local/awscli ;\
+    unzip -q /tmp/awscli.zip -d /usr/local/awscli ;\
+    /usr/local/awscli/aws/install \
+    && rm -rf /tmp/awscli.zip
+
 # Copy installed binaries and tools from builder stage
-COPY --from=builder /usr/local/bin/aws /usr/local/bin/aws
-COPY --from=builder /usr/local/aws-cli/ /usr/local/aws-cli/
 COPY --from=builder /usr/bin/terraform /usr/bin/terraform
 COPY --from=builder /usr/local/bin/tflint /usr/local/bin/tflint
 COPY --from=builder /usr/local/bin/opa /usr/local/bin/opa
